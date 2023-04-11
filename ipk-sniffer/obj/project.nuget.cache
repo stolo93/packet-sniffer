@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "ZdRIAZ7zSrcI5fGwYcpQ8C5d5Ie1bvVELbBdkDt/Et5Ts8uIjACFpuk6KIBOexOHtDJLJ0CxCo4nyso+B3jKfA==",
+  "success": true,
+  "projectFilePath": "/home/samuel/fit/4_semester/ipk/FIT_IPK_proj2/ipk-sniffer/ipk-sniffer.csproj",
+  "expectedPackageFiles": [
+    "/home/samuel/.nuget/packages/packetdotnet/1.4.8-pre15/packetdotnet.1.4.8-pre15.nupkg.sha512",
+    "/home/samuel/.nuget/packages/sharppcap/6.2.5/sharppcap.6.2.5.nupkg.sha512",
+    "/home/samuel/.nuget/packages/system.memory/4.5.5/system.memory.4.5.5.nupkg.sha512",
+    "/home/samuel/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "/home/samuel/.nuget/packages/system.text.encoding.codepages/6.0.0/system.text.encoding.codepages.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
