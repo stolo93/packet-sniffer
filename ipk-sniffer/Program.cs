@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using SharpPcap;
 using SharpPcap.LibPcap;
+using CommandLine;
 
 class Program
 {
@@ -92,4 +93,34 @@ class Program
     {
         return 10;
     }
+}
+
+public class Options
+{
+    // Interface
+    [Option('i', "interface", Required = false, Default = "", HelpText = "Interface name to sniff")]
+    public string Interface { get; set; }
+    
+    // Packet Limit
+    [Option('n', Required = false, Default = 1, HelpText = "Number of packets to catch before ending the application")]
+    public int PacketLimit { get; set; }
+
+    // TCP
+    [Option('t', "tcp", Required = false, Default = false, HelpText = "TCP protocol")]
+    public bool Tcp { get; set; }
+    
+    // UDP
+    [Option('u', "udp", Required = false, Default = false, HelpText = "UDP protocol")]
+    public bool Udp { get; set; }
+    
+    // Port
+    [Option('p', "port", Required = false, Default = -1, HelpText = "Specify the port for TCP/UDP")]
+    public int Port { set; get; }
+
+    public static void HandleParseErrors(IEnumerable<Error> errors)
+    {
+        Console.WriteLine("Failed to parse command-line arguments");
+        Environment.Exit(1);
+    }
+    
 }
