@@ -30,6 +30,7 @@ class Program
 
         var packetSniffer = new Sniffer(parsedOptions);
         packetSniffer.Initialize();
+        packetSniffer.Filter(parsedOptions);
         packetSniffer.CapturePackets();
 
     }
