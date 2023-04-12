@@ -14,6 +14,13 @@ class Program
 {
     private static void Main(string[] args)
     {
+        // Parse cli arguments
+        Options parsedOptions = null;
+        Parser.Default.ParseArguments<Options>(args)
+            .WithParsed<Options>(options => parsedOptions = options)
+            .WithNotParsed(errors => Options.HandleParseErrors(errors));
+        
+        
         var devices = LibPcapLiveDeviceList.Instance;
         if (devices.Count <= 0)
         {
@@ -22,7 +29,7 @@ class Program
         }
 
         var device = GetPcapDevice(devices);
-        var packetLimit = GetPacketLimit();
+        var packetLimit = parsedOptions.PacketLimit;
         
         // Create packetQueue, open device for capturing and register event handler
         var packetQueue = new BlockingCollection<RawCapture>();
@@ -39,7 +46,7 @@ class Program
         var processingThread = new Thread(() =>
         {
             int packetCounter = 0;
-            while (!packetQueue.IsCompleted  && (!packetLimit.HasValue || packetCounter < packetLimit))
+            while (!packetQueue.IsCompleted  && packetCounter < packetLimit)
             {
                 try
                 {
