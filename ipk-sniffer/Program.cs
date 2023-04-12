@@ -56,6 +56,30 @@ public class Options
     // Port
     [Option('p', "port", Required = false, Default = -1, HelpText = "Specify the port for TCP/UDP")]
     public int Port { set; get; }
+    
+    // ICMPv4
+    [Option(longName: "icmp4", Default = false, Required = false, HelpText = "Display only ICMPv4 packets")]
+    public bool Icmp4 { set; get; }
+    
+    // ICMPv6
+    [Option(longName: "icmp6", Required = false, Default = false, HelpText = "Display only ICMPv6 packets")]
+    public bool Icmp6 { set; get; }
+    
+    // ARP
+    [Option(longName: "arp", Required = false, Default = false, HelpText = "Display only ARP frames")]
+    public bool Arp { set; get; }
+    
+    // NDP
+    [Option(longName: "ndp", Required = false, Default = false, HelpText = "Display only ICMPv6 NDP packets")]
+    public bool Ndp { set; get; }
+    
+    // IGMP
+    [Option(longName: "igmp", Required = false, Default = false, HelpText = "Display only IGMP packets")]
+    public bool Igmp { set; get; }
+    
+    // MLD
+    [Option(longName: "mld", Required = false, Default = false, HelpText = "Display only MLD packets")]
+    public bool Mld { set; get; }
 
     public static void HandleParseErrors(IEnumerable<Error> errors)
     {
