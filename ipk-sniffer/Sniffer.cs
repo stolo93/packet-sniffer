@@ -2,6 +2,9 @@
 // Author: Samuel Stolarik
 // Date: 2023-04-12
 // Project: IPK project 2 - Packet Sniffer
+
+using PacketDotNet;
+
 namespace ipk_sniffer;
 
 using SharpPcap.LibPcap;
@@ -12,11 +15,11 @@ using SharpPcap;
 
 public class Sniffer
 {
-    private PcapDevice _device; 
+    private readonly PcapDevice _device; 
     private int _packetCounter;
-    private int _packetLimit; // Default limit if not changed in cli args
-    private BlockingCollection<RawCapture> _packetQueue;
-    private Thread _processingThread;
+    private readonly int _packetLimit; // Default limit if not changed in cli args
+    private readonly BlockingCollection<RawCapture> _packetQueue;
+    private readonly Thread _processingThread;
 
     
     /// <summary>
@@ -63,52 +66,51 @@ public class Sniffer
         string filter = "";
         if (arguments.Tcp)
         {
-            var newFilter = CreateFilter(FilterType.TCP, arguments.Port);
+            var newFilter = CreateFilter(FilterType.Tcp, arguments.Port);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
 
         if (arguments.Udp)
         {
-            var newFilter = CreateFilter(FilterType.UDP, arguments.Port);
+            var newFilter = CreateFilter(FilterType.Udp, arguments.Port);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
 
         if (arguments.Icmp4)
         {
-            var newFilter = CreateFilter(FilterType.ICMP4);
+            var newFilter = CreateFilter(FilterType.Icmp4);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
 
         if (arguments.Icmp6)
         {
-            var newFilter = CreateFilter(FilterType.ICMP6);
+            var newFilter = CreateFilter(FilterType.Icmp6);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
 
         if (arguments.Arp)
         {
-            var newFilter = CreateFilter(FilterType.ARP);
+            var newFilter = CreateFilter(FilterType.Arp);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
 
         if (arguments.Ndp)
         {
-            var newFilter = CreateFilter(FilterType.NDP);
+            var newFilter = CreateFilter(FilterType.Ndp);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
 
         if (arguments.Igmp)
         {
-            var newFilter = CreateFilter(FilterType.IGMP);
+            var newFilter = CreateFilter(FilterType.Igmp);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
 
         if (arguments.Mld)
         {
-            var newFilter = CreateFilter(FilterType.MLD);
+            var newFilter = CreateFilter(FilterType.Mld);
             filter = AddToFilterUsingOr(filter, newFilter);
         }
-        Console.WriteLine(filter);
         // Set filter on device
         _device.Filter = filter;
     }
@@ -118,18 +120,18 @@ public class Sniffer
     /// Add new filter using OR operator
     /// </summary>
     /// <param name="filter"></param>
-    /// <param name="new_filter"></param>
+    /// <param name="newFilter"></param>
     /// <returns></returns>
-    private string AddToFilterUsingOr(string filter, string new_filter)
+    private string AddToFilterUsingOr(string filter, string newFilter)
     {
         if (filter == "")
         {
-            return new_filter;
+            return newFilter;
         }
 
         else
         {
-            return filter + " or " + new_filter;
+            return filter + " or " + newFilter;
         }
     }
     
@@ -137,7 +139,7 @@ public class Sniffer
     /// <summary>
     /// Create a correct filter for a specified protocol type
     /// </summary>
-    /// <param name="type_name"></param>
+    /// <param name="typeName"></param>
     /// <param name="port"></param>
     /// <returns></returns>
     private string CreateFilter(FilterType typeName, int port = -1)
@@ -146,7 +148,7 @@ public class Sniffer
         switch (typeName)
         {
             // UDP
-            case FilterType.UDP:
+            case FilterType.Udp:
                 if (port != -1)
                 {
                     filterString = "( udp port " + port.ToString() + " )";
@@ -158,7 +160,7 @@ public class Sniffer
                 break;
             
             // TCP
-            case FilterType.TCP:
+            case FilterType.Tcp:
                 if (port != -1)
                 {
                     filterString = "( tcp port " + port.ToString() + " )";
@@ -170,33 +172,33 @@ public class Sniffer
                 break;
             
             // ICMP4
-            case FilterType.ICMP4:
+            case FilterType.Icmp4:
                 filterString = "( icmp )";
                 break;
             
             // ICMP6
-            case FilterType.ICMP6:
+            case FilterType.Icmp6:
                 filterString = "( icmp6 )";
                 break;
             
             //ARP
-            case FilterType.ARP:
+            case FilterType.Arp:
                 filterString = "( arp )";
                 break;
             
             // ICMPv6 NDP
-            case FilterType.NDP:
+            case FilterType.Ndp:
                 filterString =
                     "( icmp6[icmp6type] = icmp6-neighborsolicit or icmp6[icmp6type] = icmp6-routersolicit or icmp6[icmp6type] = icmp6-routeradvert or icmp6[icmp6type] = icmp6-neighboradvert or icmp6[icmp6type] = icmp6-redirect )";
                 break;
             
             // IGMP
-            case FilterType.IGMP:
+            case FilterType.Igmp:
                 filterString = "( igmp )";
                 break;
             
             // MLD
-            case FilterType.MLD:
+            case FilterType.Mld:
                 filterString =
                     "( icmp6[icmp6type] = icmp6-multicastlistenerquery or icmp6[icmp6type] = icmp6-multicastlistenerreportv1 or icmp6[icmp6type] = icmp6-multicastlistenerreportv2 or icmp6[icmp6type] = icmp6-multicastlistenerdone )";
                 break;
@@ -252,7 +254,7 @@ public class Sniffer
     /// <param name="packet"></param>
     private void ProcessPacket(RawCapture packet)
     {
-        Console.WriteLine(packet.GetPacket().ToString());
+        Console.WriteLine(PacketParser.ParsePacket(packet));
     }
     
     
@@ -279,13 +281,13 @@ public class Sniffer
 
     private enum FilterType
     {
-        TCP,
-        UDP,
-        ICMP4,
-        ICMP6,
-        ARP,
-        NDP,
-        IGMP,
-        MLD
+        Tcp,
+        Udp,
+        Icmp4,
+        Icmp6,
+        Arp,
+        Ndp,
+        Igmp,
+        Mld
     }
 }
