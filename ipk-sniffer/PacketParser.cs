@@ -1,16 +1,20 @@
-using System.Net.NetworkInformation;
-using System.Text;
-using PacketDotNet;
+// PacketParser.cs
+// Author: Samuel Stolarik
+// Date: 2023-04-13
+// Project: IPK project 2 - Packet Sniffer
 
 namespace ipk_sniffer;
 
 using SharpPcap;
 using PacketDotNet;
+using System;
+using System.Text;
+using System.Linq;
 
 /// <summary>
 /// Parse packets into strings
 /// </summary>
-public class PacketParser
+public static class PacketParser
 {
     /// <summary>
     /// Parse packet and return it represented as a string
@@ -72,7 +76,7 @@ public class PacketParser
     }
         
     /// <summary>
-    /// Get timestamp from packet in ISO8601 format
+    /// Get timestamp from packet in RFC 3339 format
     /// </summary>
     /// <param name="packet"></param>
     /// <returns></returns>

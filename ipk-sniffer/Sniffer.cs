@@ -3,15 +3,14 @@
 // Date: 2023-04-12
 // Project: IPK project 2 - Packet Sniffer
 
-using PacketDotNet;
-
 namespace ipk_sniffer;
 
+using SharpPcap;
 using SharpPcap.LibPcap;
+using System;
+using System.Text;
 using System.Collections.Concurrent;
 using System.Threading;
-
-using SharpPcap;
 
 public class Sniffer
 {
@@ -52,6 +51,10 @@ public class Sniffer
     /// <summary>
     /// Capture packets and process them in a separate thread
     /// </summary>
+    /// Starts capturing packets on device
+    /// then start PacketProcessing thread and waits for the thread to be ended and joined back,
+    /// meaning that correct number of packets was handled.
+    /// After that, capturing is stopped
     public void CapturePackets()
     {
         _device.StartCapture();
@@ -61,77 +64,55 @@ public class Sniffer
     }
     
     
+    /// <summary>
+    /// Set filter for PacketSniffer
+    /// </summary>
+    /// <param name="arguments"></param>
     public void Filter(Options arguments)
     {
-        string filter = "";
-        if (arguments.Tcp)
-        {
-            var newFilter = CreateFilter(FilterType.Tcp, arguments.Port);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
-
-        if (arguments.Udp)
-        {
-            var newFilter = CreateFilter(FilterType.Udp, arguments.Port);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
-
-        if (arguments.Icmp4)
-        {
-            var newFilter = CreateFilter(FilterType.Icmp4);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
-
-        if (arguments.Icmp6)
-        {
-            var newFilter = CreateFilter(FilterType.Icmp6);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
-
-        if (arguments.Arp)
-        {
-            var newFilter = CreateFilter(FilterType.Arp);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
-
-        if (arguments.Ndp)
-        {
-            var newFilter = CreateFilter(FilterType.Ndp);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
-
-        if (arguments.Igmp)
-        {
-            var newFilter = CreateFilter(FilterType.Igmp);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
-
-        if (arguments.Mld)
-        {
-            var newFilter = CreateFilter(FilterType.Mld);
-            filter = AddToFilterUsingOr(filter, newFilter);
-        }
         // Set filter on device
-        _device.Filter = filter;
+        _device.Filter = CreateFilter(arguments);
     }
 
 
     /// <summary>
+    /// Create a whole filter from the specified arguments
+    /// </summary>
+    /// <param name="arguments"></param>
+    /// <returns></returns>
+    private static string CreateFilter(Options arguments)
+    {
+        StringBuilder filterBuilder = new StringBuilder();
+        if (arguments.Tcp) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Tcp, arguments.Port));
+        if (arguments.Udp) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Udp, arguments.Port));
+        if (arguments.Icmp4) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Icmp4));
+        if (arguments.Icmp6) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Icmp6));
+        if (arguments.Arp) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Arp));
+        if (arguments.Ndp) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Ndp));
+        if (arguments.Igmp) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Igmp));
+        if (arguments.Mld) AddToFilterUsingOr(filterBuilder, CreateFilterPart(FilterType.Mld));
+        
+        return filterBuilder.ToString();
+    }
+    
+    
+    /// <summary>
     /// Add new filter using OR operator
     /// </summary>
-    /// <param name="filter"></param>
+    /// <param name="filterBuilder"></param>
     /// <param name="newFilter"></param>
     /// <returns></returns>
-    private string AddToFilterUsingOr(string filter, string newFilter)
+    private static void AddToFilterUsingOr(StringBuilder filterBuilder, string newFilter)
     {
-        if (filter == "")
+        if (filterBuilder.Length == 0)
         {
-            return newFilter;
+            filterBuilder.Append(newFilter);
         }
 
         else
         {
-            return filter + " or " + newFilter;
+            filterBuilder.Append(" or ");
+            filterBuilder.Append(newFilter);
         }
     }
     
@@ -142,7 +123,7 @@ public class Sniffer
     /// <param name="typeName"></param>
     /// <param name="port"></param>
     /// <returns></returns>
-    private string CreateFilter(FilterType typeName, int port = -1)
+    private static string CreateFilterPart(FilterType typeName, int port = -1)
     {
         var filterString = "";
         switch (typeName)
@@ -216,7 +197,7 @@ public class Sniffer
         var devices = LibPcapLiveDeviceList.Instance;
         foreach (var dev in devices)
         {
-            Console.WriteLine(dev.ToString());
+            Console.WriteLine(dev.Name);
         }
     }
     
@@ -228,7 +209,7 @@ public class Sniffer
     /// <returns></returns>
     /// <exception cref="ArithmeticException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    private static PcapDevice GetDevice(string deviceName)
+    private static PcapDevice GetDevice(string? deviceName)
     {
         var devices = LibPcapLiveDeviceList.Instance;
         if (devices.Count <= 0)
@@ -244,7 +225,7 @@ public class Sniffer
             }
         }
 
-        throw new ArgumentException("{0} device not found", deviceName);
+        throw new ArgumentException("Device: " + deviceName +" does not exist" );
     }
 
     

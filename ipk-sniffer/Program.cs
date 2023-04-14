@@ -1,38 +1,53 @@
 ﻿// Program.cs
 // Author: Samuel Stolarik
 // Date: 2023-04-11
+// Project: IPK project 2 - Packet Sniffer
 
+namespace ipk_sniffer;
 
-using System;
-using System.Collections.Concurrent;
-using System.Threading;
-using SharpPcap;
-using SharpPcap.LibPcap;
 using CommandLine;
+using System;
 
-using ipk_sniffer;
-
-class Program
+static class Program
 {
     private static void Main(string[] args)
     {
+        // If no arguments given, the application does nothing (successfully)
+        if (args.Length == 0)
+        {
+            Environment.Exit(0);
+        }
+        
         // Parse cli arguments
-        Options parsedOptions = null;
+        Options? parsedOptions = null;
         Parser.Default.ParseArguments<Options>(args)
-            .WithParsed<Options>(options => parsedOptions = options)
-            .WithNotParsed(errors => Options.HandleParseErrors(errors));
-
-        if (parsedOptions.Interface == "")
+            .WithParsed(options => parsedOptions = options)
+            .WithNotParsed(errors => Options.HandleParseErrors());
+        if (parsedOptions == null)
+        {
+            Console.WriteLine("Error: Could not parse arguments");
+            Environment.Exit(2);
+        }
+        Options.CheckArguments(parsedOptions);
+                
+        if (parsedOptions is { Interface: "" })
         {
             Sniffer.PrintDevices();
             Environment.Exit(0);
         }
 
-        var packetSniffer = new Sniffer(parsedOptions);
-        packetSniffer.Initialize();
-        packetSniffer.Filter(parsedOptions);
-        packetSniffer.CapturePackets();
-
+        try
+        {
+            var packetSniffer = new Sniffer(parsedOptions);
+            packetSniffer.Initialize();
+            packetSniffer.Filter(parsedOptions);
+            packetSniffer.CapturePackets();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            Environment.Exit(1);
+        }
     }
 }
 
@@ -40,7 +55,7 @@ public class Options
 {
     // Interface
     [Option('i', "interface", Required = false, Default = "", HelpText = "Interface name to sniff")]
-    public string Interface { get; set; }
+    public string? Interface { get; set; }
     
     // Packet Limit
     [Option('n', Required = false, Default = 1, HelpText = "Number of packets to catch before ending the application")]
@@ -82,10 +97,30 @@ public class Options
     [Option(longName: "mld", Required = false, Default = false, HelpText = "Display only MLD packets")]
     public bool Mld { set; get; }
 
-    public static void HandleParseErrors(IEnumerable<Error> errors)
+    public static void HandleParseErrors()
     {
-        Console.WriteLine("Failed to parse command-line arguments");
-        Environment.Exit(1);
+        const int incorrectArgsError = 2;
+        Environment.Exit(incorrectArgsError);
+    }
+
+    public static void CheckArguments(Options? arguments)
+    {
+        if (arguments == null)
+        {
+            Options.HandleParseErrors();
+        }
+        
+        // Port without tcp or udp
+        if (arguments != null && arguments.Port != -1)
+        {
+            if (! (arguments is { Tcp: true } or { Udp: true }))
+            {
+                Console.WriteLine("Port has to be specified with either TCP and UDP, or both.");
+                Options.HandleParseErrors();
+            }
+        }
+        
+        
     }
     
 }
