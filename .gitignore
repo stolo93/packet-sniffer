@@ -3,4 +3,6 @@ ipk-sniffer/obj/*
 ipk-sniffer/bin/*
 ipk-sniffer/ipk-sniffer
 ipk-sniffer/ipk-sniffer.pdb
+docs/html
+docs/latex
 

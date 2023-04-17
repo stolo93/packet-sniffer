@@ -1,4 +1,4 @@
-// Sniffer.cs
+// File: Sniffer.cs
 // Author: Samuel Stolarik
 // Date: 2023-04-12
 // Project: IPK project 2 - Packet Sniffer
@@ -12,19 +12,37 @@ using System.Text;
 using System.Collections.Concurrent;
 using System.Threading;
 
+/// <summary>
+/// Sniffer class, packet handler designed as a singleton
+/// </summary>
 public class Sniffer
 {
+    /// <summary>
+    /// Packet capturing device
+    /// </summary>
     private readonly PcapDevice _device; 
+    /// <summary>
+    /// Captured packet counter
+    /// </summary>
     private int _packetCounter;
+    /// <summary>
+    /// Limit for captured packets
+    /// </summary>
     private readonly int _packetLimit; // Default limit if not changed in cli args
+    /// <summary>
+    /// Queue storing received packets, before they are handled
+    /// </summary>
     private readonly BlockingCollection<RawCapture> _packetQueue;
+    /// <summary>
+    /// Separate thread to process packets from _packetQueue
+    /// </summary>
     private readonly Thread _processingThread;
 
     
     /// <summary>
     /// Create a Sniffer object
     /// </summary>
-    /// <param name="arguments"></param>
+    /// <param name="arguments">Command line arguments which influence the way how packet Sniffer is created</param>
     public Sniffer(Options arguments)
     {
         _device = GetDevice(arguments.Interface);
@@ -37,6 +55,7 @@ public class Sniffer
 
     /// <summary>
     /// Initialize packet sniffer
+    /// Open device and set PacketArrival handler
     /// </summary>
     public void Initialize()
     {
@@ -67,7 +86,7 @@ public class Sniffer
     /// <summary>
     /// Set filter for PacketSniffer
     /// </summary>
-    /// <param name="arguments"></param>
+    /// <param name="arguments">Command line arguments containing wanted filters</param>
     public void Filter(Options arguments)
     {
         // Set filter on device
@@ -79,7 +98,7 @@ public class Sniffer
     /// Create a whole filter from the specified arguments
     /// </summary>
     /// <param name="arguments"></param>
-    /// <returns></returns>
+    /// <returns>String representation of filter</returns>
     private static string CreateFilter(Options arguments)
     {
         StringBuilder filterBuilder = new StringBuilder();
@@ -97,11 +116,10 @@ public class Sniffer
     
     
     /// <summary>
-    /// Add new filter using OR operator
+    /// Add new filter using OR operator to the string currently being built in filterBuilder
     /// </summary>
-    /// <param name="filterBuilder"></param>
+    /// <param name="filterBuilder">Filter creator</param>
     /// <param name="newFilter"></param>
-    /// <returns></returns>
     private static void AddToFilterUsingOr(StringBuilder filterBuilder, string newFilter)
     {
         if (filterBuilder.Length == 0)
@@ -119,10 +137,12 @@ public class Sniffer
     
     /// <summary>
     /// Create a correct filter for a specified protocol type
+    /// If typeName is tcp or udp than also port is taken into consideration
+    /// In case no port number is provided, the filter is not made for specific port
     /// </summary>
-    /// <param name="typeName"></param>
-    /// <param name="port"></param>
-    /// <returns></returns>
+    /// <param name="typeName">Type of protocol or frame which the filter will catch</param>
+    /// <param name="port">Port number</param>
+    /// <returns>String representation of filter for the selected typeName</returns>
     private static string CreateFilterPart(FilterType typeName, int port = -1)
     {
         var filterString = "";
@@ -206,7 +226,7 @@ public class Sniffer
     /// Get device with name specified by device name
     /// </summary>
     /// <param name="deviceName"></param>
-    /// <returns></returns>
+    /// <returns>PcapDevice object chosen based on deviceName </returns>
     /// <exception cref="ArithmeticException"></exception>
     /// <exception cref="ArgumentException"></exception>
     private static PcapDevice GetDevice(string? deviceName)

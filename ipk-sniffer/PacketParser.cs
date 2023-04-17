@@ -1,4 +1,4 @@
-// PacketParser.cs
+// File: PacketParser.cs
 // Author: Samuel Stolarik
 // Date: 2023-04-13
 // Project: IPK project 2 - Packet Sniffer
@@ -12,7 +12,7 @@ using System.Text;
 using System.Linq;
 
 /// <summary>
-/// Parse packets into strings
+/// Parse packet into printable format
 /// </summary>
 public static class PacketParser
 {
@@ -25,9 +25,11 @@ public static class PacketParser
     ///     src and dst IP
     ///     src and dst port
     ///     packetBytes as a hexdump and ascii
+    ///
+    /// If the required value is not present in the packet, the field will be empty
     /// </summary>
-    /// <param name="rawCapture"></param>
-    /// <returns></returns>
+    /// <param name="rawCapture">Captured packet</param>
+    /// <returns>String, containing information retrieved from packet.</returns>
     public static string ParsePacket(RawCapture rawCapture)
     {
         var packetInfo = new PacketInfoParsed
@@ -79,7 +81,7 @@ public static class PacketParser
     /// Get timestamp from packet in RFC 3339 format
     /// </summary>
     /// <param name="packet"></param>
-    /// <returns></returns>
+    /// <returns>String with timestamp</returns>
     private static string GetTimeStamp(RawCapture packet)
     {
         var iso8601Format = "yyyy-MM-ddTHH:mm:ss.fffK";
@@ -93,7 +95,7 @@ public static class PacketParser
     /// Get packet length in bytes as a string
     /// </summary>
     /// <param name="packet"></param>
-    /// <returns></returns>
+    /// <returns>Packet size in bytes followed by the word bytes</returns>
     private static string GetByteLength(RawCapture packet)
     {
         return packet.Data.Length.ToString() + " bytes";
@@ -136,7 +138,7 @@ public static class PacketParser
     /// Ox0020: A1 96 E1 18 91 79 95 4C 5C BA BD 9C 3D 4E 4D 3B  .....y.L\...=NM;
     /// </summary>
     /// <param name="packetBytes"></param>
-    /// <returns></returns>
+    /// <returns>String representation of the packet in both hex and ascii dump</returns>
     private static string PacketHexDump(byte[]? packetBytes)
     {
         if (packetBytes == null)
@@ -166,7 +168,7 @@ public static class PacketParser
     }
 
     /// <summary>
-    /// Create padding between hex dump and ascii dump
+    /// Create padding between hex dump and ascii dump, based on the line size
     /// </summary>
     /// <param name="dataLength"></param>
     /// <param name="lineLength"></param>
@@ -236,7 +238,7 @@ public static class PacketParser
     /// Add ':' in between bytes of MAC address
     /// </summary>
     /// <param name="address"></param>
-    /// <returns></returns>
+    /// <returns>String containing formatted MAC address</returns>
     private static string FormatMacAddress(string address)
     {
         StringBuilder sb = new StringBuilder();
@@ -256,21 +258,52 @@ public static class PacketParser
 }
 
 /// <summary>
-/// Parsed packet information
+/// Stores parsed packet information
 /// </summary>
 public class PacketInfoParsed
 {
+    /// <summary>
+    /// Packet time stamp
+    /// </summary>
     public string TimeStamp { get; set; } = "";
+    /// <summary>
+    /// Source MAC address
+    /// </summary>
     public string SrcMac { get; set; } = "";
+    /// <summary>
+    /// Destination MAC address
+    /// </summary>
     public string DstMac { get; set; } = "";
+    /// <summary>
+    /// Frame length in bytes
+    /// </summary>
     public string FrameLenght { get; set; } = "";
+    /// <summary>
+    /// Source IP address
+    /// </summary>
     public string SrcIp { get; set; } = "";
+    /// <summary>
+    /// Destination IP address
+    /// </summary>
     public string DstIp { get; set; } = "";
+    /// <summary>
+    /// Source port
+    /// </summary>
     public string SrcPort { get; set; } = "";
+    /// <summary>
+    /// Destination port
+    /// </summary>
     public string DstPort { get; set; } = "";
+    /// <summary>
+    /// Hex and ascii dump
+    /// </summary>
     public string ByteOffset { get; set; } = "";
 
 
+    /// <summary>
+    /// All attributes converted to string containing the required wireshark packet hexdump format
+    /// </summary>
+    /// <returns>String representation of internal attributes</returns>
     public override string ToString()
     {
         StringBuilder sb = new StringBuilder();
