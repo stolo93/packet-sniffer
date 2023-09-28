@@ -20,16 +20,27 @@ After building, the application is used as follows.
 
 Where:
 `-i` eth0 (just one interface to sniff) or `--interface`. If this parameter is not specified (and any other parameters as well), or if only -i/--interface is specified without a value (and any other parameters are unspecified), a list of active interfaces is printed (additional information beyond the interface list is welcome but not required).
+
 `-t or --tcp` (will display TCP segments and is optionally complemented by -p functionality).
+
 `-u or --udp` (will display UDP datagrams and is optionally complemented by-p functionality).
+
 `-p port_number` (extends previous two parameters to filter TCP/UDP based on port number; if this parameter is not present, then no filtering by port number occurs; if the parameter is given, the given port can occur in both the source and destination part of TCP/UDP headers).
+
 `--icmp4` (will display only ICMPv4 packets).
+
 `--icmp6` (will display only ICMPv6 echo request/response).
+
 `--arp` (will display only ARP frames).
+
 `--ndp` (will display only ICMPv6 NDP packets).
+
 `--igmp` (will display only IGMP packets).
+
 `--mld` (will display only MLD packets).
+
 Unless protocols are explicitly specified, all (i.e., all content, regardless of protocol) are considered for printing.
+
 `-n packet_count` (specifies the number of packets to display, i.e., the "time" the program runs; if not specified, consider displaying only one packet, i.e., as if -n 1)
 
 ** This information can also be displayed by using --help**
@@ -38,16 +49,26 @@ Upon exit, either organically or using SIGINT, the application complies with sta
 
 #### Output
 Non-printable characters are replaced with period.
+
 Output format:
 > timestamp: time
+
 > src MAC: MAC address with : as separator
+
 > dst MAC: MAC address with : as separator
+
 > frame length: length
+
 > src IP: IP address if any (support v4 but also v6 representation according to RFC5952)
+
 > dst IP: IP address if any (support v4 but also v6 representation according to RFC5952)
+
 > src port: port number if any
+
 > dst port: port number if any
+
 > byte_offset: byte_offset_hexa byte_offset_ASCII
+
 whereby:
     * time is in RFC 3339 format
     * length is in bytes
@@ -73,22 +94,30 @@ Firstly, the device specified by interface parameter is opened and then filterin
 
 TCP and UDP filters:
 > ( TCP )
+
 > ( TCP port port_number)
+
 Or
+
 > ( UDP )
+
 > ( UDP port port_number )
 
 @cite capturefilters
 
 ICMPv4, ICMPv6 and ARP filters:
 > ( icmp)
+
 > ( icmp6 )
+
 > ( arp )
 
 NDP filter:
 > ( icmp6[icmp6type] = icmp6-neighborsolicit or icmp6[icmp6type] = icmp6-routersolicit or icmp6[icmp6type] = icmp6-routeradvert or icmp6[icmp6type] = icmp6-neighboradvert or icmp6[icmp6type] = icmp6-redirect )
+
 @cite narten_nordmark_simpson_soliman_1970
 
 MLD filter:
 > ( icmp6[icmp6type] = icmp6-multicastlistenerquery or icmp6[icmp6type] = icmp6-multicastlistenerreportv1 or icmp6[icmp6type] = icmp6-multicastlistenerreportv2 or icmp6[icmp6type] = icmp6-multicastlistenerdone )
+
 @cite deering_fenner_haberman_1999
