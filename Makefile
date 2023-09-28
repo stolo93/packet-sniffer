@@ -5,8 +5,8 @@
 # Project: IPK project 2 - Packet Sniffer
 ###
 
-all: 
-	dotnet publish -c Release -r linux-x64 -p:PublishSingleFile=true --self-contained false --output .
+all:
+	dotnet publish -c Release -r linux-x64 -p:PublishSingleFile=true --self-contained false --source src --output .
 
 clean:
 	dotnet clean
